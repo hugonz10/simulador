@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador RFEH - División de Honor B</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
+        :root {
+            --bg-body: #f0f2f5;
+            --bg-card: #ffffff;
+            --rfeh-red: #880924;
+            /* El rojo oscuro de las cabeceras */
+            --rfeh-red-hover: #aa0d2e;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --border-color: #e2e4e8;
+            --bg-alt-row: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-body);
+            color: var(--text-main);
+            padding: 20px;
+            margin: 0;
+            font-size: 13px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        /* Mock Header de la Federación */
+        .fed-header {
+            background: white;
+            padding: 18px 20px;
+            align-items: center;
+            justify-content: center;
+            display: flex;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            font-weight: 600;
+            font-size: 18px;
+            color: #111;
+            letter-spacing: 0.5px;
+        }
+
+        /* Nav y Controles simulados */
+        .top-controls {
+            background: white;
+            padding: 15px 20px;
+            display: flex;
+            gap: 15px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2px;
+            overflow-x: auto;
+        }
+
+        .dropdown-pill {
+            background: #f4f5f7;
+            border: 1px solid #e1e3e8;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 500;
+            color: #444;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        /* Menú de pestañas */
+        .tabs-menu {
+            background: #e8eaed;
+            padding: 15px 20px 0;
+            display: flex;
+            gap: 25px;
+            margin-bottom: 20px;
+            border-radius: 0 0 12px 12px;
+            overflow-x: auto;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .tab-item {
+            padding-bottom: 15px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #555;
+            text-transform: uppercase;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+        }
+
+        .tab-item.active {
+            color: #111;
+            border-bottom: 3px solid var(--rfeh-red);
+        }
+
+        /* Main Card */
+        .main-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 500;
+            color: #111;
+        }
+
+        .paginator {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .page-dot {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #f0f2f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .page-dot:hover {
+            background: #e2e4e8;
+        }
+
+        .page-dot.active {
+            background: var(--rfeh-red);
+            color: white;
+        }
+
+        /* Info box */
+        .info-box {
+            background: #f9fafb;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .info-box-left {
+            font-size: 13px;
+            font-weight: 500;
+            color: #333;
+            text-transform: uppercase;
+        }
+
+        .info-box-right {
+            text-align: right;
+        }
+
+        .info-box-right-jornada {
+            font-weight: 600;
+            font-size: 14px;
+            color: #111;
+            margin-bottom: 4px;
+        }
+
+        .info-box-right-date {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Tabla RFEH */
+        .rfeh-table-wrapper {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+        }
+
+        th {
+            background: var(--rfeh-red);
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 14px;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 14px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: var(--bg-alt-row);
+        }
+
+        /* Columna Equipos */
+        .equipos-cell {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            text-align: left;
+        }
+
+        .logos-vs {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 80px;
+        }
+
+        .team-logo {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+            background: white;
+            border-radius: 4px;
+            padding: 2px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .vs-text {
+            font-size: 10px;
+            color: #999;
+            font-weight: 600;
+        }
+
+        .team-names {
+            font-size: 12px;
+            font-weight: 600;
+            color: #222;
+            text-transform: uppercase;
+        }
+
+        /* Columna Fecha & Lugar */
+        .td-fecha {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .td-fecha span {
+            display: block;
+            font-weight: 400;
+            color: #666;
+            margin-top: 2px;
+            font-size: 11px;
+        }
+
+        .td-lugar {
+            font-size: 11px;
+            color: #555;
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Estado Pill */
+        .estado-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #fff;
+            border: 1px solid #d1d5db;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 500;
+            color: #444;
+        }
+
+        .estado-pill.pendiente::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #ef4444;
+            /* red dot */
+        }
+
+        .estado-pill.finalizado::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #10b981;
+            /* green dot */
+        }
+
+        /* Marcador / Simulador Inputs */
+        .simulator-controls {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            background: #f3f4f6;
+            padding: 4px;
+            border-radius: 20px;
+            border: 1px solid #d1d5db;
+            width: max-content;
+            margin: 0 auto;
+        }
+
+        .btn-sim {
+            background: transparent;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 14px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-sim:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-sim.selected {
+            background: var(--rfeh-red);
+            color: white;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Clasificación highlight */
+        .pos-top4 {
+            background-color: rgba(16, 185, 129, 0.05) !important;
+            /* verde clarito */
+            border-left: 3px solid #10b981;
+        }
+
+        .team-clasif-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        /* Modal Partidos */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #fdfdfd;
+            width: 90%;
+            max-width: 800px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            max-height: 85vh;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: #fdfdfd;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111;
+        }
+
+        .modal-close {
+            background: #ef4444;
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 18px;
+            line-height: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+
+        .modal-close:hover {
+            background: #dc2626;
+        }
+
+        .modal-body {
+            overflow-y: auto;
+            background: white;
+        }
+
+        .modal-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .modal-table th {
+            background: var(--rfeh-red);
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 12px;
+            text-transform: uppercase;
+        }
+
+        .modal-table td {
+            padding: 12px;
+            font-size: 13px;
+            border-bottom: 1px solid #f0f0f0;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .modal-table tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+
+        .score-input-box {
+            width: 28px;
+            padding: 4px;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            background: #fff;
+            color: #111;
+        }
+
+        .score-input-box:focus {
+            outline: none;
+            border-color: var(--rfeh-red);
+        }
+
+        /* Responsive Mobile */
+        @media (max-width: 768px) {
+            body {
+                padding: 8px;
+                font-size: 12px;
+            }
+
+            .main-card {
+                padding: 12px;
+                margin-bottom: 14px;
+            }
+
+            .fed-header {
+                flex-direction: column;
+                font-size: 13px;
+                text-align: center;
+                gap: 8px;
+                padding: 12px;
+            }
+
+            .fed-header img {
+                margin: 0 !important;
+                height: 28px !important;
+            }
+
+            .card-header {
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .card-title {
+                font-size: 14px;
+            }
+
+            /* Tabla de partidos: modo card */
+            #tabla-partidos thead {
+                display: none;
+            }
+
+            #tabla-partidos tbody tr {
+                display: block;
+            }
+
+            #tabla-partidos tbody td {
+                display: block;
+                padding: 0;
+                border: none;
+            }
+
+            .match-card {
+                background: white;
+                border: 1px solid var(--border-color);
+                border-radius: 10px;
+                margin-bottom: 10px;
+                overflow: hidden;
+            }
+
+            .match-card-teams {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 10px 12px;
+                border-bottom: 1px solid #f0f0f0;
+                gap: 8px;
+            }
+
+            .match-card-logos {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                flex-shrink: 0;
+            }
+
+            .match-card-names {
+                font-size: 11px;
+                font-weight: 700;
+                color: #222;
+                flex: 1;
+                text-align: left;
+            }
+
+            .match-card-date-badge {
+                font-size: 10px;
+                color: #888;
+                text-align: right;
+                flex-shrink: 0;
+            }
+
+            .match-card-controls {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 10px 12px;
+                gap: 10px;
+            }
+
+            /* Clasificacion: scroll horizontal */
+            #section-clasificacion .rfeh-table-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            #section-clasificacion table {
+                min-width: 520px;
+                font-size: 11px;
+            }
+
+            #section-clasificacion th,
+            #section-clasificacion td {
+                padding: 8px 4px;
+            }
+
+            .team-clasif-cell {
+                gap: 4px;
+            }
+
+            .team-clasif-cell img {
+                width: 18px;
+                height: 18px;
+            }
+
+            .team-clasif-cell span {
+                font-size: 10px;
+            }
+
+            .modal-content {
+                width: 96%;
+                max-height: 90vh;
+            }
+
+            .modal-table {
+                font-size: 11px;
+            }
+
+            .modal-table th,
+            .modal-table td {
+                padding: 8px 4px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <!-- HEADER FEDERACIÓN (MOCK) -->
+        <div class="fed-header">
+            <img src="federacion.jpg" style="height: 38px; margin-right: 16px; object-fit: contain;"
+                onerror="this.style.display='none'"> FEDERACIÓN ESPAÑOLA DE HOCKEY
+        </div>
+
+        <!-- SECCIÓN RESULTADOS (SIMULADOR) -->
+        <div id="section-resultados" class="main-card">
+            <div class="card-header" style="margin-bottom: 2px;">
+                <div class="card-title">Listado de Partidos</div>
+                <button id="btn-historial" onclick="toggleHistorial()" style="
+                    background: var(--rfeh-red); color: white; border: none;
+                    padding: 8px 14px; border-radius: 20px; font-size: 11px;
+                    font-weight: 600; cursor: pointer; display: flex;
+                    align-items: center; gap: 6px; transition: opacity 0.2s;
+                ">📋 Mostrar historial</button>
+            </div>
+
+            <div class="rfeh-table-wrapper">
+                <table id="tabla-partidos">
+                    <thead>
+                        <tr>
+                            <th style="text-align: left; padding-left: 20px;">Equipos</th>
+                            <th>Marcador</th>
+                            <th>Fecha</th>
+                            <th>Resultado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="partidos-body">
+                        <!-- Partidos generados por JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <p style="text-align:center; font-size:12px; color:#666;">* Utiliza la columna "Marcador" (1X2 rápido) o la
+                columna "Resultado" (goles exactos) para simular.</p>
+        </div>
+
+
+        <!-- SECCIÓN CLASIFICACIÓN -->
+        <div id="section-clasificacion" class="main-card">
+            <div class="card-header">
+                <div class="card-title">Clasificación General - Simulada</div>
+            </div>
+
+            <div class="rfeh-table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Pos</th>
+                            <th style="text-align: left;">Equipo</th>
+                            <th>PT</th>
+                            <th>PJ</th>
+                            <th>PG</th>
+                            <th>PE</th>
+                            <th>PP</th>
+                            <th>GF</th>
+                            <th>GC</th>
+                            <th>DIF</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ranking-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Configuración de escudos
+        const escudos = {
+            "SantCugat": "junior.JPG",
+            "Pedralbes": "pedralbes.jpg",
+            "Valles": "Atletic terrassa.jpg",
+            "Castelldefels": "castelldefels.jpg",
+            "RealSociedad": "clubcampo.jpg",
+            "Carpesa": "carpesa.jpg",
+            "Madrid": "rozas.jpg",
+            "Egara": "egara.jpg"
+        };
+
+        function getLogoSrc(teamId) {
+            return escudos[teamId] ? escudos[teamId] : '';
+        }
+
+        const base = {
+            Valles: { id: "Valles", nombre: "VALLES ESPORTIU", pt: 26, pj: 5, pg: 8, pe: 2, pp: 1, gf: 30, gc: 17 },
+            SantCugat: { id: "SantCugat", nombre: "HC SANT CUGAT", pt: 20, pj: 5, pg: 5, pe: 5, pp: 1, gf: 29, gc: 25 },
+            Carpesa: { id: "Carpesa", nombre: "CH CARPESA", pt: 18, pj: 5, pg: 5, pe: 3, pp: 3, gf: 24, gc: 17 },
+            Pedralbes: { id: "Pedralbes", nombre: "PEDRALBES HC", pt: 17, pj: 5, pg: 5, pe: 2, pp: 4, gf: 28, gc: 24 },
+            Egara: { id: "Egara", nombre: "EGARA 1935", pt: 15, pj: 5, pg: 4, pe: 3, pp: 4, gf: 26, gc: 23 },
+            Castelldefels: { id: "Castelldefels", nombre: "CASTELLDEFELS HC", pt: 13, pj: 5, pg: 4, pe: 1, pp: 6, gf: 24, gc: 31 },
+            Madrid: { id: "Madrid", nombre: "CH MADRID - LAS ROZAS", pt: 8, pj: 5, pg: 2, pe: 2, pp: 7, gf: 23, gc: 36 },
+            RealSociedad: { id: "RealSociedad", nombre: "REAL SOCIEDAD 1927", pt: 5, pj: 5, pg: 1, pe: 2, pp: 8, gf: 22, gc: 33 }
+        };
+
+        const jornadas = [
+            {
+                titulo: "RESULTADOS ARRASTRADOS (1ª FASE)",
+                fecha: "Histórico Regular",
+                partidos: [
+                    { eq1: "Madrid", eq2: "SantCugat", score: "4 - 4", date: "Fase 1", lugar: "-", time: "Fin" },
+                    { eq1: "Madrid", eq2: "Valles", score: "2 - 1", date: "Fase 1", lugar: "-", time: "Fin" },
+                    { eq1: "RealSociedad", eq2: "Valles", score: "2 - 2", date: "Fase 1", lugar: "-", time: "Fin" },
+                    { eq1: "RealSociedad", eq2: "SantCugat", score: "3 - 4", date: "Fase 1", lugar: "-", time: "Fin" },
+                    { eq1: "Valles", eq2: "SantCugat", score: "2 - 2", date: "Fase 1", lugar: "-", time: "Fin" },
+                    { eq1: "RealSociedad", eq2: "Madrid", score: "3 - 3", date: "Fase 1", lugar: "-", time: "Fin" },
+                    { eq1: "Valles", eq2: "Madrid", score: "5 - 2", date: "Fase 1", lugar: "-", time: "Fin" },
+                    { eq1: "SantCugat", eq2: "RealSociedad", score: "1 - 0", date: "Fase 1", lugar: "-", time: "Fin" },
+                    { eq1: "SantCugat", eq2: "Valles", score: "2 - 5", date: "Fase 1", lugar: "-", time: "Fin" },
+                    { eq1: "Madrid", eq2: "RealSociedad", score: "3 - 2", date: "Fase 1", lugar: "-", time: "Fin" },
+                    { eq1: "Valles", eq2: "RealSociedad", score: "2 - 1", date: "Fase 1", lugar: "-", time: "Fin" },
+                    { eq1: "SantCugat", eq2: "Madrid", score: "3 - 2", date: "Fase 1", lugar: "-", time: "Fin" },
+                    { eq1: "Pedralbes", eq2: "Egara", score: "3 - 2", date: "Fase 1", lugar: "-", time: "Fin" },
+                    { eq1: "Egara", eq2: "Castelldefels", score: "0 - 3", date: "Fase 1", lugar: "-", time: "Fin" },
+                    { eq1: "Carpesa", eq2: "Egara", score: "2 - 2", date: "Fase 1", lugar: "-", time: "Fin" },
+                    { eq1: "Castelldefels", eq2: "Carpesa", score: "0 - 2", date: "Fase 1", lugar: "-", time: "Fin" },
+                    { eq1: "Pedralbes", eq2: "Carpesa", score: "2 - 2", date: "Fase 1", lugar: "-", time: "Fin" },
+                    { eq1: "Castelldefels", eq2: "Pedralbes", score: "5 - 3", date: "Fase 1", lugar: "-", time: "Fin" },
+                    { eq1: "Egara", eq2: "Pedralbes", score: "1 - 1", date: "Fase 1", lugar: "-", time: "Fin" },
+                    { eq1: "Castelldefels", eq2: "Egara", score: "1 - 4", date: "Fase 1", lugar: "-", time: "Fin" },
+                    { eq1: "Egara", eq2: "Carpesa", score: "2 - 1", date: "Fase 1", lugar: "-", time: "Fin" },
+                    { eq1: "Carpesa", eq2: "Castelldefels", score: "3 - 0", date: "Fase 1", lugar: "-", time: "Fin" },
+                    { eq1: "Carpesa", eq2: "Pedralbes", score: "2 - 3", date: "Fase 1", lugar: "-", time: "Fin" },
+                    { eq1: "Pedralbes", eq2: "Castelldefels", score: "5 - 2", date: "Fase 1", lugar: "-", time: "Fin" }
+                ]
+            },
+            {
+                titulo: "JORNADA 1",
+                fecha: "08-03-2026",
+                partidos: [
+                    { eq1: "SantCugat", eq2: "Castelldefels", score: "2 - 2", date: "08/03/2026", time: "Fin" },
+                    { eq1: "Valles", eq2: "Pedralbes", score: "1 - 0", date: "08/03/2026", time: "Fin" },
+                    { eq1: "RealSociedad", eq2: "Egara", score: "2 - 1", date: "08/03/2026", time: "Fin" },
+                    { eq1: "Madrid", eq2: "Carpesa", score: "1 - 2", date: "08/03/2026", time: "Fin" }
+                ]
+            },
+            {
+                titulo: "JORNADA 2",
+                fecha: "15-03-2026",
+                partidos: [
+                    { eq1: "Pedralbes", eq2: "SantCugat", score: "2 - 3", date: "15/03/2026", time: "Fin" },
+                    { eq1: "Castelldefels", eq2: "Valles", score: "1 - 4", date: "15/03/2026", time: "Fin" },
+                    { eq1: "Carpesa", eq2: "RealSociedad", score: "4 - 2", date: "15/03/2026", time: "Fin" },
+                    { eq1: "Egara", eq2: "Madrid", score: "5 - 2", date: "15/03/2026", time: "Fin" }
+                ]
+            },
+            {
+                titulo: "JORNADA 3",
+                fecha: "22-03-2026",
+                partidos: [
+                    { eq1: "SantCugat", eq2: "Egara", score: "2 - 2", date: "22/03/2026", time: "Fin" },
+                    { eq1: "Valles", eq2: "Carpesa", score: "1 - 0", date: "22/03/2026", time: "Fin" },
+                    { eq1: "RealSociedad", eq2: "Castelldefels", score: "3 - 4", date: "22/03/2026", time: "Fin" },
+                    { eq1: "Madrid", eq2: "Pedralbes", score: "1 - 2", date: "22/03/2026", time: "Fin" }
+                ]
+            },
+            {
+                titulo: "JORNADA 4",
+                fecha: "29-03-2026",
+                partidos: [
+                    { eq1: "Carpesa", eq2: "SantCugat", score: "3 - 3", date: "29/03/2026", time: "Fin" },
+                    { eq1: "Egara", eq2: "Valles", score: "2 - 3", date: "29/03/2026", time: "Fin" },
+                    { eq1: "Pedralbes", eq2: "RealSociedad", score: "4 - 1", date: "29/03/2026", time: "Fin" },
+                    { eq1: "Castelldefels", eq2: "Madrid", score: "6 - 2", date: "29/03/2026", time: "Fin" }
+                ]
+            },
+            {
+                titulo: "JORNADA 5",
+                fecha: "12-04-2026",
+                partidos: [
+                    { eq1: "Castelldefels", eq2: "SantCugat", score: "0 - 3", date: "12/04/2026", time: "Fin" },
+                    { eq1: "Pedralbes", eq2: "Valles", score: "3 - 4", date: "12/04/2026", time: "Fin" },
+                    { eq1: "Egara", eq2: "RealSociedad", score: "5 - 3", date: "12/04/2026", time: "Fin" },
+                    { eq1: "Carpesa", eq2: "Madrid", score: "3 - 1", date: "12/04/2026", time: "Fin" }
+                ]
+            },
+            {
+                titulo: "JORNADA 6",
+                fecha: "19-04-2026",
+                partidos: [
+                    { eq1: "Valles", eq2: "Castelldefels", time: "15:00", date: "18/04/2026", lugar: "ATLÈTIC TERRASSA H..." },
+                    { eq1: "RealSociedad", eq2: "Carpesa", time: "17:30", date: "18/04/2026", lugar: "CLUB DE CAMPO VILLA..." },
+                    { eq1: "Madrid", eq2: "Egara", time: "11:00", date: "19/04/2026", lugar: "COMPLEJO DEPORTIVO..." },
+                    { eq1: "SantCugat", eq2: "Pedralbes", time: "12:00", date: "19/04/2026", lugar: "CLUB JUNIOR 1917..." }
+                ]
+            },
+            {
+                titulo: "JORNADA 7",
+                fecha: "10-05-2026",
+                partidos: [
+                    { eq1: "Egara", eq2: "SantCugat", time: "12:00", date: "09/05/2026", lugar: "CLUB EGARA" },
+                    { eq1: "Carpesa", eq2: "Valles", time: "16:00", date: "09/05/2026", lugar: "CH CARPESA" },
+                    { eq1: "Castelldefels", eq2: "RealSociedad", time: "11:30", date: "10/05/2026", lugar: "CASTELLDEFELS HC" },
+                    { eq1: "Pedralbes", eq2: "Madrid", time: "13:00", date: "10/05/2026", lugar: "REAL CLUB DE POLO" }
+                ]
+            },
+            {
+                titulo: "JORNADA 8",
+                fecha: "17-05-2026",
+                partidos: [
+                    { eq1: "SantCugat", eq2: "Carpesa", time: "12:00", date: "16/05/2026", lugar: "CLUB JUNIOR 1917" },
+                    { eq1: "Valles", eq2: "Egara", time: "15:00", date: "16/05/2026", lugar: "ATLÈTIC TERRASSA H..." },
+                    { eq1: "RealSociedad", eq2: "Pedralbes", time: "11:00", date: "17/05/2026", lugar: "CLUB DE CAMPO VILLA..." },
+                    { eq1: "Madrid", eq2: "Castelldefels", time: "12:30", date: "17/05/2026", lugar: "COMPLEJO DEPORTIVO..." }
+                ]
+            }
+        ];
+
+        let state = {};
+        let showHistorial = false;
+
+        function toggleHistorial() {
+            showHistorial = !showHistorial;
+            const btn = document.getElementById('btn-historial');
+            btn.innerHTML = showHistorial ? '🔼 Ocultar historial' : '📋 Mostrar historial';
+            renderPartidos();
+        }
+
+        function switchMainTab(tab) {
+            const tabs = document.querySelectorAll('.tab-item');
+            tabs.forEach(t => t.classList.remove('active'));
+
+            if (tab === 'resultados') tabs[0].classList.add('active');
+            else if (tab === 'clasificacion') tabs[1].classList.add('active');
+
+            if (tab === 'clasificacion') document.getElementById('section-clasificacion').scrollIntoView({ behavior: 'smooth' });
+            else document.getElementById('section-resultados').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function renderPartidos() {
+            const tbody = document.getElementById('partidos-body');
+            tbody.innerHTML = "";
+
+            jornadas.forEach((j, jIndex) => {
+                if (jIndex === 0) return; // Siempre ocultar 1ª Fase del listado principal
+                if (!showHistorial && jIndex < 6) return; // Ocultar Jornadas 1-5 si no hay historial
+
+                const headerTr = document.createElement('tr');
+                headerTr.innerHTML = `
+                    <td colspan="5" style="background: var(--bg-alt-row); text-align: left; padding: 16px 20px; font-weight: 700; color: var(--rfeh-red); border-bottom: 2px solid var(--border-color); font-size: 14px;">
+                        ${j.titulo} <span style="font-size: 11px; font-weight: 500; color: var(--text-muted); margin-left: 10px;">${j.fecha}</span>
+                    </td>
+                `;
+                tbody.appendChild(headerTr);
+
+                j.partidos.forEach((p, pIndex) => {
+                    const matchId = `m-${jIndex}-${pIndex}`;
+                    const eq1Info = base[p.eq1];
+                    const eq2Info = base[p.eq2];
+                    const res = state[matchId] ? state[matchId].res : null;
+
+                    const tr = document.createElement('tr');
+
+                    let estadoClass = res ? 'finalizado' : 'pendiente';
+                    let estadoText = res ? 'Finalizado' : 'Pendiente';
+
+                    const isMobile = window.innerWidth <= 768;
+
+                    if (isMobile) {
+                        // Modo tarjeta para móvil
+                        tr.innerHTML = `
+                        <td colspan="4" style="padding: 0; border: none;">
+                            <div class="match-card">
+                                <div class="match-card-teams">
+                                    <div class="match-card-logos">
+                                        <img src="${getLogoSrc(p.eq1)}" style="width:26px;height:26px;object-fit:contain;border-radius:4px;" onerror="this.style.display='none'">
+                                        <span style="font-size:9px;color:#999;font-weight:700;">VS</span>
+                                        <img src="${getLogoSrc(p.eq2)}" style="width:26px;height:26px;object-fit:contain;border-radius:4px;" onerror="this.style.display='none'">
+                                    </div>
+                                    <div class="match-card-names">${eq1Info.nombre}<br><span style="color:#888;font-weight:400;">vs</span> ${eq2Info.nombre}</div>
+                                    <div class="match-card-date-badge">${p.time}<br>${p.date}</div>
+                                </div>
+                                <div class="match-card-controls">
+                                    ${p.score
+                                ? `<div style="font-size:18px;font-weight:700;color:#111;letter-spacing:3px;flex:1;text-align:center;">${p.score}</div>
+                                           <span style="font-size:11px;font-weight:600;color:var(--rfeh-red);text-transform:uppercase;">Finalizado</span>`
+                                : `<div class="simulator-controls" style="flex-shrink:0;">
+                                                <button class="btn-sim ${res === '1' ? 'selected' : ''}" onclick="setResult('${matchId}', '1', '${p.eq1}', '${p.eq2}')">1</button>
+                                                <button class="btn-sim ${res === 'X' ? 'selected' : ''}" onclick="setResult('${matchId}', 'X', '${p.eq1}', '${p.eq2}')">X</button>
+                                                <button class="btn-sim ${res === '2' ? 'selected' : ''}" onclick="setResult('${matchId}', '2', '${p.eq1}', '${p.eq2}')">2</button>
+                                           </div>
+                                           <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;">
+                                                <div style="display:flex;align-items:center;gap:5px;">
+                                                    <input type="number" min="0" class="score-input-box" id="g1-${matchId}" value="${state[matchId] && state[matchId].g1 !== undefined ? state[matchId].g1 : ''}" onchange="updateScoreP('${matchId}', '${p.eq1}', '${p.eq2}')" placeholder="-">
+                                                    <span style="font-weight:700;color:#666;">-</span>
+                                                    <input type="number" min="0" class="score-input-box" id="g2-${matchId}" value="${state[matchId] && state[matchId].g2 !== undefined ? state[matchId].g2 : ''}" onchange="updateScoreP('${matchId}', '${p.eq1}', '${p.eq2}')" placeholder="-">
+                                                </div>
+                                                <span style="font-size:9px;font-weight:700;color:${res ? 'var(--rfeh-red)' : '#aaa'};text-transform:uppercase;">
+                                                    ${res === '1' ? 'Victoria Local' : (res === 'X' ? 'Empate' : (res === '2' ? 'Victoria Visit.' : 'Pendiente'))}
+                                                </span>
+                                           </div>`
+                            }
+                                </div>
+                            </div>
+                        </td>
+                    `;
+                    } else {
+                        // Modo tabla para escritorio
+                        tr.innerHTML = `
+                        <td>
+                            <div class="equipos-cell" style="padding-left: 5px;">
+                                <div class="logos-vs">
+                                    <img src="${getLogoSrc(p.eq1)}" class="team-logo" onerror="this.style.display='none'">
+                                    <span class="vs-text">VS</span>
+                                    <img src="${getLogoSrc(p.eq2)}" class="team-logo" onerror="this.style.display='none'">
+                                </div>
+                                <div class="team-names">${eq1Info.nombre} - ${eq2Info.nombre}</div>
+                            </div>
+                        </td>
+                        <td style="text-align:center;">
+                            ${p.score
+                                ? `<div style="font-size:16px;font-weight:700;color:#111;letter-spacing:2px;">${p.score}</div>`
+                                : `<div class="simulator-controls">
+                                        <button class="btn-sim ${res === '1' ? 'selected' : ''}" onclick="setResult('${matchId}', '1', '${p.eq1}', '${p.eq2}')">1</button>
+                                        <button class="btn-sim ${res === 'X' ? 'selected' : ''}" onclick="setResult('${matchId}', 'X', '${p.eq1}', '${p.eq2}')">X</button>
+                                        <button class="btn-sim ${res === '2' ? 'selected' : ''}" onclick="setResult('${matchId}', '2', '${p.eq1}', '${p.eq2}')">2</button>
+                                   </div>`
+                            }
+                        </td>
+                        <td class="td-fecha">${p.time}<span>${p.date}</span></td>
+                        <td style="text-align:center;">
+                            ${p.score
+                                ? `<span style="font-weight:600;font-size:11px;color:var(--rfeh-red);text-transform:uppercase;">FINALIZADO</span>`
+                                : `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                                        <div style="display:flex;align-items:center;gap:6px;">
+                                            <input type="number" min="0" class="score-input-box" id="g1-${matchId}" value="${state[matchId] && state[matchId].g1 !== undefined ? state[matchId].g1 : ''}" onchange="updateScoreP('${matchId}', '${p.eq1}', '${p.eq2}')" placeholder="-">
+                                            <span style="font-weight:700;color:#666;">-</span>
+                                            <input type="number" min="0" class="score-input-box" id="g2-${matchId}" value="${state[matchId] && state[matchId].g2 !== undefined ? state[matchId].g2 : ''}" onchange="updateScoreP('${matchId}', '${p.eq1}', '${p.eq2}')" placeholder="-">
+                                        </div>
+                                        <span style="font-weight:600;font-size:10px;text-transform:uppercase;color:${res ? 'var(--rfeh-red)' : '#888'};">
+                                            ${res === '1' ? 'Victoria Local' : (res === 'X' ? 'Empate' : (res === '2' ? 'Victoria Visit.' : 'Pendiente'))}
+                                        </span>
+                                   </div>`
+                            }
+                        </td>
+                    `;
+                    }
+                    tbody.appendChild(tr);
+                });
+            });
+        }
+
+        function updateScoreP(matchId, eq1, eq2) {
+            const el1 = document.getElementById(`g1-${matchId}`);
+            const el2 = document.getElementById(`g2-${matchId}`);
+            if (!el1 || !el2) return;
+
+            const activeId = document.activeElement ? document.activeElement.id : null;
+
+            const val1 = el1.value;
+            const val2 = el2.value;
+
+            if (val1 === '' && val2 === '') {
+                if (state[matchId]) delete state[matchId];
+            } else {
+                const g1 = val1 !== '' ? parseInt(val1) : undefined;
+                const g2 = val2 !== '' ? parseInt(val2) : undefined;
+
+                let res = (state[matchId] && state[matchId].res) ? state[matchId].res : null;
+                if (g1 !== undefined && g2 !== undefined) {
+                    if (g1 > g2) res = '1';
+                    else if (g1 < g2) res = '2';
+                    else res = 'X';
+                }
+
+                state[matchId] = { res, eq1, eq2, g1, g2 };
+            }
+
+            renderPartidos();
+            calcular();
+
+            if (activeId) {
+                const elToFocus = document.getElementById(activeId);
+                if (elToFocus) {
+                    elToFocus.focus();
+                    // Restore caret pos roughly for numbers
+                    if (elToFocus.type === 'number' || elToFocus.type === 'text') {
+                        const val = elToFocus.value;
+                        elToFocus.value = '';
+                        elToFocus.value = val;
+                    }
+                }
+            }
+        }
+
+        function setResult(matchId, result, eq1, eq2) {
+            if (state[matchId] && state[matchId].res === result && state[matchId].g1 === undefined) {
+                delete state[matchId];
+            } else {
+                state[matchId] = { res: result, eq1, eq2 };
+            }
+            renderPartidos();
+            calcular();
+        }
+
+
+        function getHeadToHeadWinner(aId, bId) {
+            let ptsA = 0;
+            let ptsB = 0;
+
+            jornadas.forEach((j, jIndex) => {
+                j.partidos.forEach((p, pIndex) => {
+                    if ((p.eq1 === aId && p.eq2 === bId) || (p.eq1 === bId && p.eq2 === aId)) {
+                        let res = null;
+                        if (p.score) {
+                            const parts = p.score.split('-');
+                            const g1 = parseInt(parts[0].trim());
+                            const g2 = parseInt(parts[1].trim());
+                            if (g1 > g2) res = '1';
+                            else if (g1 === g2) res = 'X';
+                            else res = '2';
+                        } else {
+                            const matchId = `m-${jIndex}-${pIndex}`;
+                            if (state[matchId]) res = state[matchId].res;
+                        }
+
+                        if (res) {
+                            if (p.eq1 === aId) {
+                                if (res === '1') ptsA += 3;
+                                else if (res === 'X') { ptsA += 1; ptsB += 1; }
+                                else if (res === '2') ptsB += 3;
+                            } else {
+                                if (res === '1') ptsB += 3;
+                                else if (res === 'X') { ptsB += 1; ptsA += 1; }
+                                else if (res === '2') ptsA += 3;
+                            }
+                        }
+                    }
+                });
+            });
+
+            if (ptsA > ptsB) return -1;
+            if (ptsA < ptsB) return 1;
+            return 0; // empate en enfrentamiento directo
+        }
+
+        function calcular() {
+            let stats = JSON.parse(JSON.stringify(base));
+
+            Object.values(state).forEach(matchObj => {
+                if (!matchObj) return;
+                const { res, eq1, eq2, g1, g2 } = matchObj;
+
+                stats[eq1].pj++;
+                stats[eq2].pj++;
+
+                if (res === '1') {
+                    stats[eq1].pt += 3;
+                    stats[eq1].pg++; stats[eq2].pp++;
+                } else if (res === 'X') {
+                    stats[eq1].pt += 1; stats[eq2].pt += 1;
+                    stats[eq1].pe++; stats[eq2].pe++;
+                } else if (res === '2') {
+                    stats[eq2].pt += 3;
+                    stats[eq2].pg++; stats[eq1].pp++;
+                }
+
+                let addG1 = g1 !== undefined ? g1 : (res === '1' ? 1 : 0);
+                let addG2 = g2 !== undefined ? g2 : (res === '2' ? 1 : 0);
+                if (res === 'X' && g1 === undefined) { addG1 = 0; addG2 = 0; }
+
+                stats[eq1].gf += addG1; stats[eq2].gc += addG1;
+                stats[eq2].gf += addG2; stats[eq1].gc += addG2;
+            });
+
+            const groupsByPt = {};
+            Object.values(stats).forEach(eq => {
+                if (!groupsByPt[eq.pt]) groupsByPt[eq.pt] = [];
+                groupsByPt[eq.pt].push(eq);
+            });
+
+            const sortedPoints = Object.keys(groupsByPt).map(Number).sort((a, b) => b - a);
+            let ranking = [];
+
+            sortedPoints.forEach(pt => {
+                let group = groupsByPt[pt];
+                if (group.length === 2) {
+                    group.sort((a, b) => {
+                        const h2h = getHeadToHeadWinner(a.id, b.id);
+                        if (h2h !== 0) return h2h;
+                        return (b.gf - b.gc) - (a.gf - a.gc);
+                    });
+                } else if (group.length > 2) {
+                    group.sort((a, b) => {
+                        return (b.gf - b.gc) - (a.gf - a.gc);
+                    });
+                }
+                ranking = ranking.concat(group);
+            });
+
+            const tableBody = document.getElementById('ranking-body');
+            tableBody.innerHTML = "";
+            ranking.forEach((eq, i) => {
+                const isPos4 = i < 4 ? 'pos-top4' : '';
+
+                const totalMatches = eq.pg + eq.pe + eq.pp;
+
+                const pgPct = totalMatches ? Math.round(eq.pg / totalMatches * 100) : 0;
+                const pePct = totalMatches ? Math.round(eq.pe / totalMatches * 100) : 0;
+                const ppPct = totalMatches ? Math.round(eq.pp / totalMatches * 100) : 0;
+
+                const gfRat = totalMatches ? (eq.gf / totalMatches) : 0;
+                const gcRat = totalMatches ? (eq.gc / totalMatches) : 0;
+
+                const formatRatio = (r) => (r % 1 === 0 ? r : r.toFixed(1)) + ' gol/part.';
+
+                const row = `<tr class="${isPos4}">
+                <td style="font-weight:600; color:${i < 4 ? '#10b981' : '#555'}">${i + 1}</td>
+                <td>
+                    <div class="team-clasif-cell">
+                        <img src="${getLogoSrc(eq.id)}" style="width:24px; height:24px; object-fit:contain; border-radius:4px;" onerror="this.style.display='none'">
+                        ${eq.nombre}
+                    </div>
+                </td>
+                <td><span style="font-size:12px; font-weight:700; color:#333; background: #fff; border: 1px solid #ddd; padding: 4px 16px; border-radius: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">${eq.pt}</span></td>
+                <td style="cursor:pointer;" onclick="showTeamMatches('${eq.id}')">${totalMatches}<span style="font-size:10px; color:#aaa; margin-left:4px; vertical-align:top;">🔍</span></td>
+                <td>${eq.pg}<div style="font-size:9px; color:#888;">${pgPct}%</div></td>
+                <td>${eq.pe}<div style="font-size:9px; color:#888;">${pePct}%</div></td>
+                <td>${eq.pp}<div style="font-size:9px; color:#888;">${ppPct}%</div></td>
+                <td style="font-weight:600;">${eq.gf}<div style="font-size:9px; color:#888; font-weight:400;">${formatRatio(gfRat)}</div></td>
+                <td style="font-weight:600;">${eq.gc}<div style="font-size:9px; color:#888; font-weight:400;">${formatRatio(gcRat)}</div></td>
+                <td style="font-weight:600; font-size:13px;">${eq.gf - eq.gc > 0 ? '+' : ''}${eq.gf - eq.gc}</td>
+            </tr>`;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        // Init
+        renderPartidos();
+        function closeModal() {
+            document.getElementById('matches-modal').classList.remove('active');
+        }
+
+        function showTeamMatches(teamId) {
+            const teamName = base[teamId].nombre;
+            document.getElementById('modal-team-title').innerText = "Listado de partidos - " + teamName;
+
+            const tbody = document.getElementById('modal-matches-body');
+            tbody.innerHTML = "";
+
+            jornadas.forEach((j, jIndex) => {
+                j.partidos.forEach((p, pIndex) => {
+                    if (p.eq1 === teamId || p.eq2 === teamId) {
+                        const eq1Info = base[p.eq1];
+                        const eq2Info = base[p.eq2];
+
+                        let displayScore = "-";
+                        if (p.score) {
+                            displayScore = p.score;
+                        } else {
+                            const matchId = `m-${jIndex}-${pIndex}`;
+                            if (state[matchId]) {
+                                displayScore = `[ ${state[matchId].res} ]`;
+                            }
+                        }
+
+                        const eq1Name = p.eq1 === teamId ? `<strong>${eq1Info.nombre}</strong>` : eq1Info.nombre;
+                        const eq2Name = p.eq2 === teamId ? `<strong>${eq2Info.nombre}</strong>` : eq2Info.nombre;
+
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${j.titulo.replace('RESULTADOS ARRASTRADOS (1ª FASE)', '1ª F.').replace('JORNADA ', '')}</td>
+                            <td>${p.date || j.fecha}</td>
+                            <td style="text-align: right;">${eq1Name}</td>
+                            <td><img src="${getLogoSrc(p.eq1)}" style="width:24px;height:24px;object-fit:contain;border-radius:4px;" onerror="this.style.display='none'"></td>
+                            <td style="font-weight: 700; font-size:14px; background:#f9f9f9; width: 60px;">${displayScore}</td>
+                            <td><img src="${getLogoSrc(p.eq2)}" style="width:24px;height:24px;object-fit:contain;border-radius:4px;" onerror="this.style.display='none'"></td>
+                            <td style="text-align: left;">${eq2Name}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    }
+                });
+            });
+
+            document.getElementById('matches-modal').classList.add('active');
+        }
+
+        calcular();
+    </script>
+
+    <div class="modal-overlay" id="matches-modal" onclick="if(event.target === this) closeModal()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-team-title">Listado de partidos</div>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body" style="padding: 0;">
+                <table class="modal-table">
+                    <thead>
+                        <tr>
+                            <th>JOR</th>
+                            <th>FECHA</th>
+                            <th style="text-align: right;">LOCAL</th>
+                            <th></th>
+                            <th style="width: 60px;">RES</th>
+                            <th></th>
+                            <th style="text-align: left;">VISITANTE</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modal-matches-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
